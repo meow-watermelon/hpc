@@ -1,0 +1,20 @@
+Host mgs
+    Hostname 192.168.122.101
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host mds
+    Hostname 192.168.122.102
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host ods1
+    Hostname 192.168.122.103
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host ods2
+    Hostname 192.168.122.104
+    User root
+    IdentityFile ~/.ssh/id_rsa
+

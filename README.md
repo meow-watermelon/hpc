@@ -1,2 +1,1 @@
-# hpc
-Eric's Home HPC
+# Eric's Home HPC (VM-based)
