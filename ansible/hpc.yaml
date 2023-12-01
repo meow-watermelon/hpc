@@ -1,0 +1,37 @@
+---
+- name: initialize hosts
+  hosts: hpc
+  remote_user: root
+
+  tasks:
+  - name: set selinux permissive
+    ansible.posix.selinux:
+      policy: targeted
+      state: permissive
+
+  - name: copy hosts file
+    ansible.builtin.copy:
+      force: true
+      src: "../configs/etc/hosts"
+      dest: "/etc/hosts"
+      owner: "root"
+      group: "root"
+      mode: 0644
+
+  - name: add user ericlee
+    ansible.builtin.user:
+      create_home: true
+      name: "ericlee"
+      groups: "wheel"
+      password: "$6$kYjALEmH6U9RZxYW$pCfxmEHWAnSCOCE3f59GAZHUYr0a49AIFXxioH1HEL8n4ACrqq0EIMQgjyCSCPcg0HF49zMFhVvQHX5Y.b9s.."
+      state: "present"
+
+  - name: add comments
+    ansible.builtin.lineinfile:
+      path: "{{ item.path }}"
+      line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
+      insertbefore: BOF
+      state: present
+      regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
+    loop:
+      - path: "/etc/hosts"
