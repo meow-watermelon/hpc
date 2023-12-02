@@ -23,8 +23,8 @@
       create_home: true
       name: "ericlee"
       groups: "wheel"
-      password: "$6$kYjALEmH6U9RZxYW$pCfxmEHWAnSCOCE3f59GAZHUYr0a49AIFXxioH1HEL8n4ACrqq0EIMQgjyCSCPcg0HF49zMFhVvQHX5Y.b9s.."
-      state: "present"
+      password: "$y$j9T$4AQaYNiCne7QAPNmPzAfW1$xhAvQuj4GDtlCROeno0cjPY41e2NTCMn.QYN2QeXgK6"
+      state: present
 
   - name: add comments
     ansible.builtin.lineinfile:
