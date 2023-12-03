@@ -57,3 +57,22 @@
     ansible.builtin.yum:
       name: "munge"
       state: "latest"
+
+  - name: distribute munge key
+    ansible.builtin.copy:
+      force: true
+      src: "../configs/etc/munge/munge.key"
+      dest: "/etc/munge/munge.key"
+      owner: "munge"
+      group: "munge"
+      mode: 0600
+
+  - name: enable and start munge daemon
+    ansible.builtin.systemd_service:
+      enabled: true
+      name: "munge"
+      state: "started"
+
+  - name: verify munge service
+    ansible.builtin.shell:
+      cmd: "/usr/bin/munge -n | /usr/bin/unmunge"
