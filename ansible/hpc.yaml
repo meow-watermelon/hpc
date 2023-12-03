@@ -35,7 +35,7 @@
       uid: 1000
       group: "hpc"
       groups: "wheel"
-      password: "$y$j9T$4AQaYNiCne7QAPNmPzAfW1$xhAvQuj4GDtlCROeno0cjPY41e2NTCMn.QYN2QeXgK6"
+      password: "{{ 'homehpc' | password_hash('sha512', 'homehpcsalt') }}"
       state: present
 
   - name: add comments
