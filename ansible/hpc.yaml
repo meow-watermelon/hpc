@@ -1,5 +1,5 @@
 ---
-- name: initialize hosts
+- name: initialization stage
   hosts: hpc
   remote_user: root
 
@@ -8,6 +8,10 @@
     ansible.posix.selinux:
       policy: targeted
       state: permissive
+
+  - name: set hostname
+    ansible.builtin.command:
+      cmd: "/usr/bin/nmcli general hostname {{ hostvars[inventory_hostname]['hostname'] }}"
 
   - name: copy hosts file
     ansible.builtin.copy:
@@ -35,3 +39,13 @@
       regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
     loop:
       - path: "/etc/hosts"
+
+- name: munge stage
+  hosts: farm
+  remote_user: root
+
+  tasks:
+  - name: install munge
+    ansible.builtin.yum:
+      name: "munge"
+      state: "latest"

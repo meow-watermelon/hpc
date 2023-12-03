@@ -1,3 +1,7 @@
+Host *
+    StrictHostKeyChecking no
+    UserKnownHostsFile /dev/null
+
 Host mgs
     Hostname 192.168.122.101
     User root
@@ -15,6 +19,26 @@ Host oss1
 
 Host oss2
     Hostname 192.168.122.104
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host head
+    Hostname 192.168.122.105
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host node1
+    Hostname 192.168.122.106
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host node2
+    Hostname 192.168.122.107
+    User root
+    IdentityFile ~/.ssh/id_rsa
+
+Host node3
+    Hostname 192.168.122.108
     User root
     IdentityFile ~/.ssh/id_rsa
 
