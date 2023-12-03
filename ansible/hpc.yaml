@@ -22,10 +22,18 @@
       group: "root"
       mode: 0644
 
+  - name: create hpc group
+    ansible.builtin.group:
+      name: "hpc"
+      gid: 9999
+      state: present
+
   - name: add user ericlee
     ansible.builtin.user:
       create_home: true
       name: "ericlee"
+      uid: 1000
+      group: "hpc"
       groups: "wheel"
       password: "$y$j9T$4AQaYNiCne7QAPNmPzAfW1$xhAvQuj4GDtlCROeno0cjPY41e2NTCMn.QYN2QeXgK6"
       state: present
