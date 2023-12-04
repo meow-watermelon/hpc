@@ -1,13 +1,19 @@
 ---
 - name: initialization stage
-  hosts: hpc
-  remote_user: root
+  hosts: "hpc"
+  remote_user: "root"
 
   tasks:
   - name: set selinux permissive
     ansible.posix.selinux:
       policy: targeted
       state: permissive
+
+  - name: disable firewall
+    ansible.builtin.systemd_service:
+      enabled: false
+      name: "firewalld"
+      state: "stopped"
 
   - name: set hostname
     ansible.builtin.command:
@@ -38,19 +44,9 @@
       password: "{{ 'homehpc' | password_hash('sha512', 'homehpcsalt') }}"
       state: present
 
-  - name: add comments
-    ansible.builtin.lineinfile:
-      path: "{{ item.path }}"
-      line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
-      insertbefore: BOF
-      state: present
-      regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
-    loop:
-      - path: "/etc/hosts"
-
 - name: munge stage
-  hosts: farm
-  remote_user: root
+  hosts: "farm"
+  remote_user: "root"
 
   tasks:
   - name: install munge
@@ -76,3 +72,69 @@
   - name: verify munge service
     ansible.builtin.shell:
       cmd: "/usr/bin/munge -n | /usr/bin/unmunge"
+
+- name: slurm stage
+  hosts: "farm"
+  remote_user: "root"
+
+  tasks:
+  - name: install slurmctld on head node
+    ansible.builtin.yum:
+      name: "slurm-slurmctld"
+      state: "latest"
+    when: inventory_hostname in groups['head']
+
+  - name: install slurmd on head node
+    ansible.builtin.yum:
+      name: "slurm-slurmd"
+      state: "latest"
+    when: inventory_hostname in groups['compute']
+
+  - name: copy slurm.conf file
+    ansible.builtin.copy:
+      force: true
+      src: "../configs/etc/slurm/slurm.conf"
+      dest: "/etc/slurm/slurm.conf"
+      owner: "root"
+      group: "root"
+      mode: 0644
+
+  - name: enable and start slurmctld daemon
+    ansible.builtin.systemd_service:
+      enabled: true
+      name: "slurmctld"
+      state: "started"
+    when: inventory_hostname in groups['head']
+
+  - name: enable and start slurmd daemon
+    ansible.builtin.systemd_service:
+      enabled: true
+      name: "slurmd"
+      state: "started"
+    when: inventory_hostname in groups['compute']
+
+- name: finalization stage
+  hosts: "hpc"
+  remote_user: "root"
+
+  tasks:
+  - name: add comments for hpc group
+    ansible.builtin.lineinfile:
+      path: "{{ item.path }}"
+      line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
+      insertbefore: BOF
+      state: present
+      regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
+    loop:
+      - path: "/etc/hosts"
+
+  - name: add comments for farm group
+    ansible.builtin.lineinfile:
+      path: "{{ item.path }}"
+      line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
+      insertbefore: BOF
+      state: present
+      regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
+    loop:
+      - path: "/etc/slurm/slurm.conf"
+    when: inventory_hostname in groups['farm']
