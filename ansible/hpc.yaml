@@ -62,6 +62,7 @@
       owner: "munge"
       group: "munge"
       mode: 0600
+    notify: "restart munge"
 
   - name: enable and start munge daemon
     ansible.builtin.systemd_service:
@@ -72,6 +73,12 @@
   - name: verify munge service
     ansible.builtin.shell:
       cmd: "/usr/bin/munge -n | /usr/bin/unmunge"
+
+  handlers:
+    - name: restart munge
+      ansible.builtin.service:
+        name: "munge"
+        state: "restarted"
 
 - name: slurm stage
   hosts: "farm"
