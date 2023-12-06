@@ -105,6 +105,9 @@
       owner: "root"
       group: "root"
       mode: 0644
+    notify:
+      - "restart slurmctld"
+      - "restart slurmd"
 
   - name: enable and start slurmctld daemon
     ansible.builtin.systemd_service:
@@ -120,28 +123,14 @@
       state: "started"
     when: inventory_hostname in groups['compute']
 
-- name: finalization stage
-  hosts: "hpc"
-  remote_user: "root"
-
-  tasks:
-  - name: add comments for hpc group
-    ansible.builtin.lineinfile:
-      path: "{{ item.path }}"
-      line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
-      insertbefore: BOF
-      state: "present"
-      regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
-    loop:
-      - path: "/etc/hosts"
-
-  - name: add comments for farm group
-    ansible.builtin.lineinfile:
-      path: "{{ item.path }}"
-      line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
-      insertbefore: BOF
-      state: "present"
-      regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
-    loop:
-      - path: "/etc/slurm/slurm.conf"
-    when: inventory_hostname in groups['farm']
+  handlers:
+    - name: "restart slurmctld"
+      ansible.builtin.service:
+        name: "slurmctld"
+        state: "restarted"
+      when: inventory_hostname in groups['head']
+    - name: "restart slurmd"
+      ansible.builtin.service:
+        name: "slurmd"
+        state: "restarted"
+      when: inventory_hostname in groups['compute']
