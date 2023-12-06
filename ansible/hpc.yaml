@@ -6,8 +6,8 @@
   tasks:
   - name: set selinux permissive
     ansible.posix.selinux:
-      policy: targeted
-      state: permissive
+      policy: "targeted"
+      state: "permissive"
 
   - name: disable firewall
     ansible.builtin.systemd_service:
@@ -32,7 +32,7 @@
     ansible.builtin.group:
       name: "hpc"
       gid: 9999
-      state: present
+      state: "present"
 
   - name: add user ericlee
     ansible.builtin.user:
@@ -42,7 +42,7 @@
       group: "hpc"
       groups: "wheel"
       password: "{{ 'homehpc' | password_hash('sha512', 'homehpcsalt') }}"
-      state: present
+      state: "present"
 
 - name: munge stage
   hosts: "farm"
@@ -130,7 +130,7 @@
       path: "{{ item.path }}"
       line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
       insertbefore: BOF
-      state: present
+      state: "present"
       regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
     loop:
       - path: "/etc/hosts"
@@ -140,7 +140,7 @@
       path: "{{ item.path }}"
       line: "# THIS FILE IS MANAGED BY ANSIBLE! DO NOT CHANGE FILE CONTENTS!\n# LAST EDIT TIMESTAMP: {{ '%Y-%m-%d %H:%M:%S' | strftime(ansible_date_time.epoch) }}"
       insertbefore: BOF
-      state: present
+      state: "present"
       regexp: '^# THIS FILE IS MANAGED BY ANSIBLE'
     loop:
       - path: "/etc/slurm/slurm.conf"
