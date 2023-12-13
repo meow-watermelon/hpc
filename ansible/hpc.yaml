@@ -85,13 +85,32 @@
   remote_user: "root"
 
   tasks:
+  - name: install mariadb-server on head node
+    ansible.builtin.yum:
+      name: "mariadb-server"
+      state: "latest"
+    when: inventory_hostname in groups['head']
+
+  - name: enable and start mariadb daemon
+    ansible.builtin.systemd_service:
+      enabled: true
+      name: "mariadb"
+      state: "started"
+    when: inventory_hostname in groups['head']
+
+  - name: install slurmdbd on head node
+    ansible.builtin.yum:
+      name: "slurm-slurmdbd"
+      state: "latest"
+    when: inventory_hostname in groups['head']
+
   - name: install slurmctld on head node
     ansible.builtin.yum:
       name: "slurm-slurmctld"
       state: "latest"
     when: inventory_hostname in groups['head']
 
-  - name: install slurmd on head node
+  - name: install slurmd on compute nodes
     ansible.builtin.yum:
       name: "slurm-slurmd"
       state: "latest"
@@ -108,6 +127,25 @@
     notify:
       - "restart slurmctld"
       - "restart slurmd"
+
+  - name: copy slurmdbd.conf file
+    ansible.builtin.copy:
+      force: true
+      src: "../configs/etc/slurm/slurmdbd.conf"
+      dest: "/etc/slurm/slurmdbd.conf"
+      owner: "root"
+      group: "root"
+      mode: 0600
+    when: inventory_hostname in groups['head']
+    notify:
+      - "restart slurmdbd"
+
+  - name: enable and start slurmdbd daemon
+    ansible.builtin.systemd_service:
+      enabled: true
+      name: "slurmdbd"
+      state: "started"
+    when: inventory_hostname in groups['head']
 
   - name: enable and start slurmctld daemon
     ansible.builtin.systemd_service:
@@ -127,6 +165,11 @@
     - name: "restart slurmctld"
       ansible.builtin.service:
         name: "slurmctld"
+        state: "restarted"
+      when: inventory_hostname in groups['head']
+    - name: "restart slurmdbd"
+      ansible.builtin.service:
+        name: "slurmdbd"
         state: "restarted"
       when: inventory_hostname in groups['head']
     - name: "restart slurmd"
